@@ -868,3 +868,5 @@ AVERTISSEMENT: Unmatched cancel notification for request id 1579
 2022.03.03 15:24:38 WARN  no build target for: C:\Users\thoma\Documents\Systems_for_data_science\cs449-Template-M1\src\main\scala\shared\predictions.scala
 2022.03.03 15:24:59 WARN  no build target for: C:\Users\thoma\Documents\Systems_for_data_science\cs449-Template-M1\src\main\scala\predict\Baseline.scala
 2022.03.03 15:26:13 WARN  no build target for: C:\Users\thoma\Documents\Systems_for_data_science\cs449-Template-M1\src\main\scala\predict\Baseline.scala
+2022.03.05 14:53:47 INFO  tracing is disabled for protocol LSP, to enable tracing of incoming and outgoing JSON messages create an empty file at c:\Users\thoma\Documents\Systems_for_data_science\sysDS\.metals\lsp.trace.json or C:\Users\thoma\AppData\Local\scalameta\metals\cache\lsp.trace.json
+2022.03.05 14:53:51 INFO  logging to file C:\Users\thoma\Documents\Systems_for_data_science\sysDS\.metals\metals.log
