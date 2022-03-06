@@ -112,4 +112,50 @@ package object predictions
     def mae(predict : (Int, Int, Seq[Rating]) => Double, train : Seq[Rating], test : Seq[Rating]) : Double = {
       mean(test.filter(_.rating != -1).map{case Rating(u,i,r) => (predict(u,i,train) - r).abs})
     }
+
+    // Personnalized ratings
+
+    def normalizedRatings(map_u : Map[Int,Double], ratings : Seq[Rating]) : Seq[Rating] = {
+      ratings.filter(_.user != -1).map{case Rating(u,i,r) => Rating(u,i,(r - map_u(u))/scale(r, map_u(u)))}
+    } // map_u the map obtained by mapUser
+
+    def norm2(s : Seq[Double]) : Double = {
+      scala.math.sqrt(s.map(x => x*x).sum)
+    }
+
+    //def mapNorm2user(user : Int, map_u : Map[Int,Double], normalizedRatings : Seq[Rating]) : Map[Int,Double] = {
+    //  val users = normalizedRatings.filter(_.user != -1).map{case Rating(u,i,r) => u}.distinct
+    //  val map_uNorm = (users.map{u => norm2(normalizedRatings.filter(_.user == u).map{case Rating(u,i,r) => r})}).toMap
+    //  map_uNorm
+    //}
+
+    def ratingsPreProcessed(normalizedRatings : Seq[Rating]) : Seq[Rating] = {
+      val users = normalizedRatings.filter(_.user != -1).map{case Rating(u,i,r) => u}.distinct
+      val map_uNorm = (users.map{u => (u,norm2(normalizedRatings.filter(_.user == u).map{case Rating(u,i,r) => r}))}).toMap
+      normalizedRatings.filter(_.user != -1).map{case Rating(u,i,r) => Rating(u,i,r/map_uNorm(u))}
+    }
+
+    def sim(u : Int, v : Int, preProcessedRatings : Seq[Rating]) : Double = {
+      var rating_u = preProcessedRatings.filter(_.user == u)
+      var rating_v = preProcessedRatings.filter(_.user == v) 
+      var map_u = (rating_u.map{case Rating(u,i,r) => (i,r)}).toMap
+      var map_v = (rating_u.map{case Rating(v,i,r) => (i,r)}).toMap
+      var items_uv = rating_v.map{case Rating(u,i,r) => i}.intersect(rating_u.map{case Rating(u,i,r) => i})
+      var sim = items_uv.map{i => map_u(i)*map_v(i)}.sum
+      sim
+    }
+
+    def ratingItemSim(u : Int, i : Int, normalizedRatings : Seq[Rating], preProcessedRatings : Seq[Rating], sim : (Int,Int,Seq[Rating]) => Double) : Double = {
+      var rating_i = normalizedRatings.filter(_.item == i).map{case Rating(v,i,r) => (sim(u,v,preProcessedRatings),r)}
+      var num = rating_i.map{case (sim,r) => sim*r}.sum
+      var denom = rating_i.map{case (sim,r) => sim.abs}.sum
+      if (denom != 0) num/denom else 0.0
+    }
+
+    def predictionPersonalized(u : Int, i : Int, normalizedRatings : Seq[Rating], preProcessedRatings : Seq[Rating], map_u : Map[Int,Double], meanRatings : Double, sim : (Int,Int,Seq[Rating]) => Double) : Double = {
+        var r_u : Double = 0.0
+        var r_i = ratingItemSim(u,i,normalizedRatings,preProcessedRatings,sim)
+        if (map_u contains u) {r_u = map_u(u)} else meanRatings
+        r_u + r_i * scale(r_u + r_i, r_u)
+    }
 }

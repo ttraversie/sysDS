@@ -41,6 +41,11 @@ object Personalized extends App {
   
   // Compute here
 
+  val map_u = mapUser(train)
+  val mean = meanRatings(train)
+  val normalizedR = normalizedRatings(map_u,train)
+  val ratingsPP = ratingsPreProcessed(normalizedR)
+
   // Save answers as JSON
   def printToFile(content: String, 
                   location: String = "./answers.json") =
@@ -59,13 +64,13 @@ object Personalized extends App {
           "3.Measurements" -> ujson.Num(conf.num_measurements())
         ),
         "P.1" -> ujson.Obj(
-          "1.PredUser1Item1" -> ujson.Num(0.0), // Prediction of item 1 for user 1 (similarity 1 between users)
-          "2.OnesMAE" -> ujson.Num(0.0)         // MAE when using similarities of 1 between all users
+          "1.PredUser1Item1" -> ujson.Num(predictionPersonalized(1,1,normalizedR,ratingsPP,map_u,mean,(x,y,z) => 1)), // Prediction of item 1 for user 1 (similarity 1 between users)
+          "2.OnesMAE" -> ujson.Num(mae((a,b,c) => predictionPersonalized(a,b,normalizedR,ratingsPP,map_u,mean,(x,y,z) => 1),train,test))         // MAE when using similarities of 1 between all users
         ),
         "P.2" -> ujson.Obj(
-          "1.AdjustedCosineUser1User2" -> ujson.Num(0.0), // Similarity between user 1 and user 2 (adjusted Cosine)
-          "2.PredUser1Item1" -> ujson.Num(0.0),  // Prediction item 1 for user 1 (adjusted cosine)
-          "3.AdjustedCosineMAE" -> ujson.Num(0.0) // MAE when using adjusted cosine similarity
+          "1.AdjustedCosineUser1User2" -> ujson.Num(sim(1,1,ratingPP)), // Similarity between user 1 and user 2 (adjusted Cosine)
+          "2.PredUser1Item1" -> ujson.Num(predictionPersonalized(1,1,normalizedR,ratingsPP,map_u,mean,sim)),  // Prediction item 1 for user 1 (adjusted cosine)
+          "3.AdjustedCosineMAE" -> ujson.Num(mae((a,b,c) => predictionPersonalized(a,b,normalizedR,ratingsPP,map_u,mean,sim),train,test)) // MAE when using adjusted cosine similarity
         ),
         "P.3" -> ujson.Obj(
           "1.JaccardUser1User2" -> ujson.Num(0.0), // Similarity between user 1 and user 2 (jaccard similarity)
