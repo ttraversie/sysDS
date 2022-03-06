@@ -68,10 +68,14 @@ package object predictions
         mean(ratings.filter(_.item == item).map{case Rating(u,i,r) => normalize(r, u, item, ratings)})
     }
 
-    def prediction(item : Int, user : Int, ratings : Seq[Rating]) : Double = {
+    def prediction(user : Int, item : Int, ratings : Seq[Rating]) : Double = {
         if (meanRatingUser(user, ratings) == 0.0) meanRatings(ratings)
         val r_u = meanRatingUser(user, ratings)
         val r_i = meanNormalizedItem(item, ratings)
         r_u + r_i * scale(r_u + r_i, r_u)
+    }
+
+    def mae(predict : (Int, Int, Seq[Rating]) => Double, train : Seq[Rating], test : Seq[Rating]) : Double = {
+      mean(test.filter(_.rating != -1).map{case Rating(u,i,r) => (predict(u,i,train) - r).abs})
     }
 }

@@ -41,8 +41,9 @@ object Baseline extends App {
   val test = load(spark, conf.test(), conf.separator()).collect()
 
   val measurements = (1 to conf.num_measurements()).map(x => timingInMs(() => {
-    Thread.sleep(1000) // Do everything here from train and test
-    42        // Output answer as last value
+    //Thread.sleep(1000) // Do everything here from train and test
+    mae((a,b,c) => meanRatings(c),train,test)
+    //42        // Output answer as last value
   }))
   val timings = measurements.map(t => t._2) // Retrieve the timing measurements
 
@@ -71,10 +72,10 @@ object Baseline extends App {
           "5.PredUser1Item1" -> ujson.Num(prediction(1,1,train)) // Datatype of answer: Double
         ),
         "B.2" -> ujson.Obj(
-          "1.GlobalAvgMAE" -> ujson.Num(0.0), // Datatype of answer: Double
-          "2.UserAvgMAE" -> ujson.Num(0.0),  // Datatype of answer: Double
-          "3.ItemAvgMAE" -> ujson.Num(0.0),   // Datatype of answer: Double
-          "4.BaselineMAE" -> ujson.Num(0.0)   // Datatype of answer: Double
+          "1.GlobalAvgMAE" -> ujson.Num(mae((a,b,c) => meanRatings(c),train,test)), // Datatype of answer: Double
+          "2.UserAvgMAE" -> ujson.Num(mae((a,b,c) => meanRatingUser(a,c),train,test)),  // Datatype of answer: Double
+          "3.ItemAvgMAE" -> ujson.Num(mae((a,b,c) => meanRatingItem(b,c),train,test)),   // Datatype of answer: Double
+          "4.BaselineMAE" -> ujson.Num(mae(prediction,train,test))   // Datatype of answer: Double
         ),
         "B.3" -> ujson.Obj(
           "1.GlobalAvg" -> ujson.Obj(
