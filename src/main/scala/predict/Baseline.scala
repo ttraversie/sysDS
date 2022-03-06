@@ -40,10 +40,13 @@ object Baseline extends App {
   println("Loading test data from: " + conf.test()) 
   val test = load(spark, conf.test(), conf.separator()).collect()
 
+  val map_u = mapsUser(train)
+  val map_i = mapItem(train)
+  val meanRatings = meanRatings(train)
+
   val measurements = (1 to conf.num_measurements()).map(x => timingInMs(() => {
-    //Thread.sleep(1000) // Do everything here from train and test
-    mae((a,b,c) => meanRatings(c),train,test)
-    //42        // Output answer as last value
+    Thread.sleep(1000) // Do everything here from train and test
+    42        // Output answer as last value
   }))
   val timings = measurements.map(t => t._2) // Retrieve the timing measurements
 
@@ -65,17 +68,17 @@ object Baseline extends App {
           "3.Measurements" -> ujson.Num(conf.num_measurements())
         ),
         "B.1" -> ujson.Obj(
-          "1.GlobalAvg" -> ujson.Num(meanRatings(train)), // Datatype of answer: Double
+          "1.GlobalAvg" -> ujson.Num(meanRatings), // Datatype of answer: Double
           "2.User1Avg" -> ujson.Num(meanRatingUser(1,train)),  // Datatype of answer: Double
           "3.Item1Avg" -> ujson.Num(meanRatingItem(1,train)),   // Datatype of answer: Double
           "4.Item1AvgDev" -> ujson.Num(meanNormalizedItem(1,train)), // Datatype of answer: Double
-          "5.PredUser1Item1" -> ujson.Num(prediction(1,1,train)) // Datatype of answer: Double
+          "5.PredUser1Item1" -> ujson.Num(predictionBaseline(1,1, map_u, map_i, meanRatings)) // Datatype of answer: Double
         ),
         "B.2" -> ujson.Obj(
-          "1.GlobalAvgMAE" -> ujson.Num(mae((a,b,c) => meanRatings(c),train,test)), // Datatype of answer: Double
-          "2.UserAvgMAE" -> ujson.Num(mae((a,b,c) => meanRatingUser(a,c),train,test)),  // Datatype of answer: Double
-          "3.ItemAvgMAE" -> ujson.Num(mae((a,b,c) => meanRatingItem(b,c),train,test)),   // Datatype of answer: Double
-          "4.BaselineMAE" -> ujson.Num(mae(prediction,train,test))   // Datatype of answer: Double
+          "1.GlobalAvgMAE" -> ujson.Num(mae((a,b,c) => meanRatings,train,test)), // Datatype of answer: Double
+          "2.UserAvgMAE" -> ujson.Num(mae((a,b,c) => predictionUser(a,b,map_u,meanRatings),train,test)),  // Datatype of answer: Double
+          "3.ItemAvgMAE" -> ujson.Num(mae((a,b,c) => predictionItem(a,b,map_i,meanRatings),train,test)),   // Datatype of answer: Double
+          "4.BaselineMAE" -> ujson.Num(mae((a,b,c) => predictionBaseline(a,b,map_u,map_i,meanRatings),train,test))   // Datatype of answer: Double
         ),
         "B.3" -> ujson.Obj(
           "1.GlobalAvg" -> ujson.Obj(

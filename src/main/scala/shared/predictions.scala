@@ -69,10 +69,38 @@ package object predictions
     }
 
     def prediction(user : Int, item : Int, ratings : Seq[Rating]) : Double = {
-        if (meanRatingUser(user, ratings) == 0.0) meanRatings(ratings)
         val r_u = meanRatingUser(user, ratings)
+        if (r_u == 0.0) meanRatings(ratings)
         val r_i = meanNormalizedItem(item, ratings)
         r_u + r_i * scale(r_u + r_i, r_u)
+    }
+
+    def mapsUser(ratings : Seq[Rating]) : Map[Int,Double] = {
+        val users = ratings.filter(_.user != -1).map{case Rating(u,i,r) => u}.distinct
+        val map_u = (users.map{u => (u,meanRatingUser(u, ratings))}).toMap
+        map_u
+    }
+
+    def mapItem(ratings : Seq[Rating]) : Map[Int,Double] = {
+        val items = ratings.filter(_.item != -1).map{case Rating(u,i,r) => i}.distinct
+        val map_i = (items.map{i => (i,meanNormalizedItem(i, ratings))}).toMap
+        map_i
+    }
+
+    def predictionBaseline(user : Int, item : Int, map_u : Map[Int,Double], map_i : Map[Int,Double], meanRatings : Double) : Double = {
+        var r_u : Double = 0.0
+        var r_i : Double = 0.0
+        if (map_u contains user) {r_u = map_u(user)} else meanRatings
+        if (map_i contains item) {r_i = map_i(item)}
+        r_u + r_i * scale(r_u + r_i, r_u)
+    }
+
+    def predictionUser(user : Int, item : Int, map_u : Map[Int,Double], meanRatings : Double) : Double = {
+        if (map_u contains user) {map_u(user)} else meanRatings
+    }
+
+    def predictionItem(user : Int, item : Int, map_i : Map[Int,Double], meanRatings : Double) : Double = {
+        if (map_i contains item) {map_i(item)} else meanRatings
     }
 
     def mae(predict : (Int, Int, Seq[Rating]) => Double, train : Seq[Rating], test : Seq[Rating]) : Double = {
