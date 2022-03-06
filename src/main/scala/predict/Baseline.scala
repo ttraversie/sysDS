@@ -40,7 +40,7 @@ object Baseline extends App {
   println("Loading test data from: " + conf.test()) 
   val test = load(spark, conf.test(), conf.separator()).collect()
 
-  val map_u = mapsUser(train)
+  val map_u = mapUser(train)
   val map_i = mapItem(train)
   val meanR = meanRatings(train)
 

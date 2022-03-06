@@ -75,7 +75,7 @@ package object predictions
         r_u + r_i * scale(r_u + r_i, r_u)
     }
 
-    def mapsUser(ratings : Seq[Rating]) : Map[Int,Double] = {
+    def mapUser(ratings : Seq[Rating]) : Map[Int,Double] = {
         val users = ratings.filter(_.user != -1).map{case Rating(u,i,r) => u}.distinct
         val map_u = (users.map{u => (u,meanRatingUser(u, ratings))}).toMap
         map_u
@@ -83,7 +83,7 @@ package object predictions
 
     def mapItem(ratings : Seq[Rating]) : Map[Int,Double] = {
         val items = ratings.filter(_.item != -1).map{case Rating(u,i,r) => i}.distinct
-        val map_i = (items.map{i => (i,meanNormalizedItem(i, ratings))}).toMap
+        val map_i = (items.map{i => (i,meanRatingItem(i, ratings))}).toMap
         map_i
     }
 
