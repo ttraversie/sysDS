@@ -87,6 +87,12 @@ package object predictions
         map_i
     }
 
+    def mapItemNormalized(ratings : Seq[Rating]) : Map[Int,Double] = {
+        val items = ratings.filter(_.item != -1).map{case Rating(u,i,r) => i}.distinct
+        val map_i = (items.map{i => (i,meanNormalizedItem(i, ratings))}).toMap
+        map_i
+    }
+
     def predictionBaseline(user : Int, item : Int, map_u : Map[Int,Double], map_i : Map[Int,Double], meanRatings : Double) : Double = {
         var r_u : Double = 0.0
         var r_i : Double = 0.0

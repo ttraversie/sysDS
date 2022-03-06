@@ -42,6 +42,7 @@ object Baseline extends App {
 
   val map_u = mapUser(train)
   val map_i = mapItem(train)
+  val map_iN = mapItemNormalized(train)
   val meanR = meanRatings(train)
 
   val measurements = (1 to conf.num_measurements()).map(x => timingInMs(() => {
@@ -72,13 +73,13 @@ object Baseline extends App {
           "2.User1Avg" -> ujson.Num(meanRatingUser(1,train)),  // Datatype of answer: Double
           "3.Item1Avg" -> ujson.Num(meanRatingItem(1,train)),   // Datatype of answer: Double
           "4.Item1AvgDev" -> ujson.Num(meanNormalizedItem(1,train)), // Datatype of answer: Double
-          "5.PredUser1Item1" -> ujson.Num(predictionBaseline(1,1, map_u, map_i, meanR)) // Datatype of answer: Double
+          "5.PredUser1Item1" -> ujson.Num(predictionBaseline(1,1, map_u, map_iN, meanR)) // Datatype of answer: Double
         ),
         "B.2" -> ujson.Obj(
           "1.GlobalAvgMAE" -> ujson.Num(mae((a,b,c) => meanR,train,test)), // Datatype of answer: Double
           "2.UserAvgMAE" -> ujson.Num(mae((a,b,c) => predictionUser(a,b,map_u,meanR),train,test)),  // Datatype of answer: Double
           "3.ItemAvgMAE" -> ujson.Num(mae((a,b,c) => predictionItem(a,b,map_i,meanR),train,test)),   // Datatype of answer: Double
-          "4.BaselineMAE" -> ujson.Num(mae((a,b,c) => predictionBaseline(a,b,map_u,map_i,meanR),train,test))   // Datatype of answer: Double
+          "4.BaselineMAE" -> ujson.Num(mae((a,b,c) => predictionBaseline(a,b,map_u,map_iN,meanR),train,test))   // Datatype of answer: Double
         ),
         "B.3" -> ujson.Obj(
           "1.GlobalAvg" -> ujson.Obj(
