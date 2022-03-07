@@ -43,7 +43,7 @@ object Baseline extends App {
   val predictorM = predictionMean(train)
   val predictorI = predictionItem(train)
   val predictorU = predictionUser(train)
-  val predictorB = predictionBeseline(train)
+  val predictorB = predictionBaseline(train)
 
   val measurements = (1 to conf.num_measurements()).map(x => timingInMs(() => {
     Thread.sleep(1000) // Do everything here from train and test
