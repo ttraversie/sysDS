@@ -43,7 +43,8 @@ object Personalized extends App {
 
   val predictorUniform = predictionPersonalized(train,"Uniform")
   val predictorCosine = predictionPersonalized(train,"Cosine")
-  val normRatings = normalizedRatings(train)
+  val map_u = mapUser(train)
+  val normRatings = normalizedRatings(map_u,train)
   val ratingsPP = ratingsPreProcessed(normRatings)
   val mapUI = mapUserItems(ratingsPP)
 
