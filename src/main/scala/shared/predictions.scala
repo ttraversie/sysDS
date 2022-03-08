@@ -102,23 +102,23 @@ package object predictions
     ((u,i) => {
     if (map_u contains u) {r_u = map_u(u)} else mean
     if (map_i_norm contains i) {r_i = map_i_norm(i)}
-    r_u + r_i * scale(r_u + r_i, r_u)})
+    (r_u + r_i * scale(r_u + r_i, r_u)).round})
   }
 
   def predictionUser(ratings : Seq[Rating]) : ((Int,Int) => Double) = {
     val map_u = mapUser(ratings)
     val mean = meanRatings(ratings)
-    ((u,i) => if (map_u contains u) {map_u(u)} else mean)
+    ((u,i) => if (map_u contains u) {map_u(u).round} else mean.round)
   }
 
   def predictionItem(ratings : Seq[Rating]) : ((Int,Int) => Double) = {
     val map_i = mapItem(ratings)
     val mean = meanRatings(ratings)
-    ((u,i) => if (map_i contains i) {map_i(i)} else mean)
+    ((u,i) => if (map_i contains i) {map_i(i).round} else mean.round)
   }
 
   def predictionMean(ratings : Seq[Rating]) : ((Int,Int) => Double) = {
-    val mean = meanRatings(ratings)
+    val mean = meanRatings(ratings).round
     ((u,i) => mean)
   }
 
@@ -163,22 +163,7 @@ package object predictions
     var map_v = mapUI(v)
     var items_uOrv = (map_u._1).union(map_v._1)
     var items_uAndv = (map_u._1).intersect(map_v._1)
-    var sim = items_uAndv.length / items_uOrv.length
-    sim
-  }
-
-  def simJaccardPrint(u : Int, v : Int, mapUI : Map[Int,(Seq[Int],Map[Int,Double])]) : Double = {    
-    if (!((mapUI contains u) && (mapUI contains v))) 0.0
-    var map_u = mapUI(u)
-    var map_v = mapUI(v)
-    var items_uOrv = (map_u._1).union(map_v._1)
-    var items_uAndv = (map_u._1).intersect(map_v._1)
-    println(items_uOrv)
-    println(items_uAndv)
-    println(items_uAndv.length)
-    println(items_uOrv.length)
-    println(items_uAndv.length/items_uOrv.length)
-    var sim = items_uAndv.length / items_uOrv.length
+    var sim = items_uAndv.length.toDouble / items_uOrv.length.toDouble
     sim
   }
 
@@ -203,7 +188,7 @@ package object predictions
     ((u,i) => {
     var r_i = ratingItemSim(u,i,normalized,sim)
     if (map_u contains u) {r_u = map_u(u)} else mean
-    r_u + r_i * scale(r_u + r_i, r_u)
+    (r_u + r_i * scale(r_u + r_i, r_u)).round
     })
   }
 
