@@ -161,8 +161,20 @@ package object predictions
     if (!(mapUI contains u) || !(mapUI contains v)) 0.0
     var map_u = mapUI(u)
     var map_v = mapUI(v)
-    var items_uAndv = (map_u._1).intersect(map_v._1)
     var items_uOrv = (map_u._1).union(map_v._1)
+    var items_uAndv = (map_u._1).intersect(map_v._1)
+    var sim = items_uAndv.length / items_uOrv.length
+    sim
+  }
+
+  def simJaccardPrint(u : Int, v : Int, mapUI : Map[Int,(Seq[Int],Map[Int,Double])]) : Double = {    
+    if (!(mapUI contains u) || !(mapUI contains v)) 0.0
+    var map_u = mapUI(u)
+    var map_v = mapUI(v)
+    var items_uOrv = (map_u._1).union(map_v._1)
+    var items_uAndv = (map_u._1).intersect(map_v._1)
+    print(items_uOrv)
+    print(items_uAndv)
     var sim = items_uAndv.length / items_uOrv.length
     sim
   }
