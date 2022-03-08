@@ -157,6 +157,16 @@ package object predictions
     sim
   }
 
+  def simJaccard(u : Int, v : Int, mapUI : Map[Int,(Seq[Int],Map[Int,Double])]) : Double = {    
+    if (!(mapUI contains u) || !(mapUI contains v)) 0.0
+    var map_u = mapUI(u)
+    var map_v = mapUI(v)
+    var items_uAndv = (map_u._1).intersect(map_v._1)
+    var items_uOrv = (map_u._1).union(map_v._1)
+    var sim = items_uAndv.length / items_uAndv.length
+    sim
+  }
+
   def ratingItemSim(u : Int, i : Int, normalizedRatings : Seq[Rating], sim : (Int,Int) => Double) : Double = {
     var rating_i = normalizedRatings.filter(_.item == i).map{case Rating(v,i,r) => (sim(u,v),r)}
     var num = rating_i.map{case (s,r) => s*r}.sum
@@ -172,6 +182,7 @@ package object predictions
     val mapUI = mapUserItems(preProcessedRatings)
     val sim : ((Int,Int) => Double) = {
             if (similarity == "Uniform") {(u,v) => 1.0}
+            else if (similarity == "Jaccard") {(u,v) => simJaccard(u,v, mapUI)}
             else {(u,v) => simCosine(u,v, mapUI)}}
     var r_u : Double = 0.0
     ((u,i) => {

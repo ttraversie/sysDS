@@ -43,6 +43,7 @@ object Personalized extends App {
 
   val predictorUniform = predictionPersonalized(train,"Uniform")
   val predictorCosine = predictionPersonalized(train,"Cosine")
+  val predictorJaccard = predictionPersonalized(train,"Jaccard")
   val map_u = mapUser(train)
   val normRatings = normalizedRatings(map_u,train)
   val ratingsPP = ratingsPreProcessed(normRatings)
@@ -70,14 +71,14 @@ object Personalized extends App {
           "2.OnesMAE" -> ujson.Num(mae((a,b) => predictorUniform(a,b),test))         // MAE when using similarities of 1 between all users
         ),
         "P.2" -> ujson.Obj(
-          "1.AdjustedCosineUser1User2" -> ujson.Num(simCosine(1,1,mapUI)), // Similarity between user 1 and user 2 (adjusted Cosine)
+          "1.AdjustedCosineUser1User2" -> ujson.Num(simCosine(1,2,mapUI)), // Similarity between user 1 and user 2 (adjusted Cosine)
           "2.PredUser1Item1" -> ujson.Num(predictorCosine(1,1)),  // Prediction item 1 for user 1 (adjusted cosine)
           "3.AdjustedCosineMAE" -> ujson.Num(mae((a,b) => predictorCosine(a,b),test)) // MAE when using adjusted cosine similarity
         ),
         "P.3" -> ujson.Obj(
-          "1.JaccardUser1User2" -> ujson.Num(0.0), // Similarity between user 1 and user 2 (jaccard similarity)
-          "2.PredUser1Item1" -> ujson.Num(0.0),  // Prediction item 1 for user 1 (jaccard)
-          "3.JaccardPersonalizedMAE" -> ujson.Num(0.0) // MAE when using jaccard similarity
+          "1.JaccardUser1User2" -> ujson.Num(simJaccard(1,2,mapUI)), // Similarity between user 1 and user 2 (jaccard similarity)
+          "2.PredUser1Item1" -> ujson.Num(predictorJaccard(1,1)),  // Prediction item 1 for user 1 (jaccard)
+          "3.JaccardPersonalizedMAE" -> ujson.Num(mae((a,b) => predictorJaccard(a,b),test)) // MAE when using jaccard similarity
         )
       )
       val json = write(answers, 4)
