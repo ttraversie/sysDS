@@ -168,7 +168,7 @@ package object predictions
   }
 
   def simJaccardPrint(u : Int, v : Int, mapUI : Map[Int,(Seq[Int],Map[Int,Double])]) : Double = {    
-    if (!(mapUI contains u) || !(mapUI contains v)) 0.0
+    if (!((mapUI contains u) && (mapUI contains v))) 0.0
     var map_u = mapUI(u)
     var map_v = mapUI(v)
     var items_uOrv = (map_u._1).union(map_v._1)
@@ -176,7 +176,8 @@ package object predictions
     print(items_uOrv)
     print(items_uAndv)
     print(items_uAndv.length)
-    print(items_uOrv.length )
+    print(items_uOrv.length)
+    print(items_uAndv.length/items_uOrv.length)
     var sim = items_uAndv.length / items_uOrv.length
     sim
   }
