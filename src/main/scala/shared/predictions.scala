@@ -175,6 +175,8 @@ package object predictions
     var items_uAndv = (map_u._1).intersect(map_v._1)
     print(items_uOrv)
     print(items_uAndv)
+    print(items_uAndv.length)
+    print(items_uOrv.length )
     var sim = items_uAndv.length / items_uOrv.length
     sim
   }
