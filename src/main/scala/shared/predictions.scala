@@ -163,7 +163,7 @@ package object predictions
     var map_v = mapUI(v)
     var items_uAndv = (map_u._1).intersect(map_v._1)
     var items_uOrv = (map_u._1).union(map_v._1)
-    var sim = items_uAndv.length / items_uAndv.length
+    var sim = items_uAndv.length / items_uOrv.length
     sim
   }
 
