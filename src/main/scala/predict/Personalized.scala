@@ -48,6 +48,7 @@ object Personalized extends App {
   val normRatings = normalizedRatings(map_u,train)
   val ratingsPP = ratingsPreProcessed(normRatings)
   val mapUI = mapUserItems(ratingsPP)
+  simJaccardPrint(1,2,mapUI)
 
   // Save answers as JSON
   def printToFile(content: String, 
