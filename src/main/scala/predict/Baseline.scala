@@ -61,19 +61,19 @@ object Baseline extends App {
     val predictorM = predictionMean(train)
     mae(predictorM,test)
   }))
-  val timingsI = measurementsM.map(t => t._2)
+  val timingsI = measurementsI.map(t => t._2)
 
   val measurementsU = (1 to conf.num_measurements()).map(x => timingInMs(() => {
     val predictorM = predictionMean(train)
     mae(predictorM,test)
   }))
-  val timingsU = measurementsM.map(t => t._2)
+  val timingsU = measurementsU.map(t => t._2)
 
   val measurementsB = (1 to conf.num_measurements()).map(x => timingInMs(() => {
     val predictorM = predictionMean(train)
     mae(predictorM,test)
   }))
-  val timingsB = measurementsM.map(t => t._2)
+  val timingsB = measurementsB.map(t => t._2)
 
   // Save answers as JSON
   def printToFile(content: String, 
