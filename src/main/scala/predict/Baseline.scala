@@ -58,20 +58,20 @@ object Baseline extends App {
   val timingsM = measurementsM.map(t => t._2)
 
   val measurementsI = (1 to conf.num_measurements()).map(x => timingInMs(() => {
-    val predictorM = predictionMean(train)
-    mae(predictorM,test)
+    val predictorI = predictionItem(train)
+    mae(predictorI,test)
   }))
   val timingsI = measurementsI.map(t => t._2)
 
   val measurementsU = (1 to conf.num_measurements()).map(x => timingInMs(() => {
-    val predictorM = predictionMean(train)
-    mae(predictorM,test)
+    val predictorU = predictionUser(train)
+    mae(predictorU,test)
   }))
   val timingsU = measurementsU.map(t => t._2)
 
   val measurementsB = (1 to conf.num_measurements()).map(x => timingInMs(() => {
-    val predictorM = predictionMean(train)
-    mae(predictorM,test)
+    val predictorB = predictionBaseline(train)
+    mae(predictorB,test)
   }))
   val timingsB = measurementsB.map(t => t._2)
 
