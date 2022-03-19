@@ -19,12 +19,12 @@
 \title{CS-449 Project Milestone 1: Personalized Recommender with k-NN}
 
 \author{
-\textbf{Name}: xxx\\
+\textbf{Name}: Clément Francis\\
 \textbf{Sciper}: xxx\\
-\textbf{Email:} xxx\\
-\textbf{Name}: xxx\\
+\textbf{Email:} clement.francis@epfl.ch\\
+\textbf{Name}: Thomas Traversié\\
 \textbf{Sciper}: xxx\\
-\textbf{Email:} xxx\\
+\textbf{Email:} thomas.traversie@epfl.ch\\
 }
 
 \begin{document}
@@ -51,8 +51,26 @@ Implement the previous prediction methods using Scala's standard library, withou
   % python stats.py data/ml-100k/u.data
   
     \item[\textbf{B.1}] \textit{Compute and output the global average rating ($\bar r_{\bullet,\bullet}$), the average rating for user 1 ($\bar r_{1,\bullet}$),  the average rating for item 1 ($\bar r_{\bullet,1}$), the average deviation for item 1 ($\bar{\hat r}_{\bullet,1}$), and the predicted rating of user 1 for item 1 ($p_{1,1}$, Eq~\ref{eq:baseline}) using \texttt{data/ml-100k/u2.base} for training. When computing the item average for items that do not have ratings in the training set, use the global average ($\bar r_{\bullet, \bullet}$). When making predictions for items that are not in the training set, use the user average if present, otherwise the global average.}
+    
+    In order to compute the global average rating, we write the function \texttt{meanRatings}, which takes a sequence of ratings Seq[Rating] and returns a double. We first filter the sequence, we map each Rating to its value and then we apply the function \texttt{mean}.
+    
+    The computation of the average rating of a given user is done through the function \texttt{meanRatingUser}, which takes as arguments a user and a sequence of ratings and returns a double. We filter the sequence to keep the ratings corresponding to the user and we compute the mean.
+    
+    We compute similarly the average rating of a given item with the fuunction \texttt{meanRatingItem} but we filter on the user.
+    
+    We compute the average deviation of an item with the function \texttt{meanNormalizedItem}. We use the intermediary functions \texttt{scale} and \texttt{normalize}, which compute the scale and the normalized deviation. 
+    
+    The predicted ating is computed with \texttt{prediction}, applying the given formula and using the functions already defined. If the user has no rating in the training set, the average rating of the user will be 0.0 (due to the definition of \texttt{mean}), thus we return the global average.
+    
+    We find : $\bar r_{\bullet,\bullet}$ = 3.53, $\bar r_{1,\bullet}$ = 3.63, $\bar r_{\bullet,1}$ = 3.89, $\bar{\hat r}_{\bullet,1}$ = 0.30 and $p_{1,1}$ = 4.
+    
+    
   
     \item [\textbf{B.2}] \textit{Compute the prediction accuracy (average MAE on \texttt{ml-100k/u2.test}) of the previous methods ($\bar r_{\bullet, \bullet}$, $\bar r_{u,\bullet}$, $\bar r_{\bullet,i}$) and that of the proposed baseline ($p_{u,i}$, Eq.~\ref{eq:baseline}). }
+    
+    We write four functions that take a training set and return a predictor. \texttt{predictionMean}, \texttt{predictionUser}, \texttt{predictionItem} and \texttt{predictionBaseline}. To write efficient functions, we use objects of type Map to store for each user to its average rating, for each item to its average rating and its average deviation. This method avoid the computation of same data multiple times. 
+    
+    We write the function \texttt{mae} which compute the MAE for a given predictor and a given testing set. We find the following MAE: 0.89 for $\bar r_{\bullet, \bullet}$, 0.81 for $\bar r_{u,\bullet}$, 0.78 for $\bar r_{\bullet,i}$) and 0.73 for the proposed baseline $p_{u,i}$
 
   \item [\textbf{B.3}] \textit{Measure the time required for computing the MAE for all ratings in the test set (\texttt{ml-100k/u2.test}) with all four methods by recording the current time before and after (ex: with \texttt{System.nanoTime()} in Scala). The duration is the difference between the two. } 
  
@@ -63,6 +81,10 @@ Include the time for computing all values required to obtain the answer from the
  For all four methods, perform three measurements and compute the average and standard-deviation.}
  
  \textit{In your report, show in a figure the relationship between prediction precision (MAE) on the x axis, and the computation time on the y axis including the standard-deviation. Report also the technical specifications (model, CPU speed, RAM, OS, Scala language version, and JVM version) of the machine on which you ran the tests. Which of the four prediction methods is the most expensive to compute? Is the relationship between MAE and computation linear? What do you conclude on the computing needs of more accurate prediction methods?}
+ 
+ The Baseline method is the more expensive one to compute. The results are what we expected: the more sophisticated the method is, the more computations and time it needs. The relationship between the MAE value and the computation time is not linear: it is increasingly expensive to compute more accurately. Therefore, more accurate prediction methods requires more computing needs.
+ 
+ The computer we use has the following technical specifications: model: HP ENVY x360, CPU speed: 2.10 GHz, RAM: 8 Go, OS: Microsoft Windows 10, Scala language version: 2.11.12,  JVM version: 1.8.0\_321.
 
 \end{itemize}
 
@@ -114,9 +136,21 @@ Implement $p_{u,i}$ using Spark RDDs. Your distributed implementation should giv
 \begin{itemize}
     \item [\textbf{P.1}] \textit{Using uniform similarities of 1 between all users, compute the predicted rating of user 1 for item 1 ($p_{1,1}$) and the prediction accuracy (MAE on \texttt{ml-100k/u2.test}) of the personalized baseline predictor.} 
     
+    To compute a personalized predictor for a specified similarity, we write a unique function \texttt{predictionPersonalized}, the similarity used being notified by an argument. For the predictor with uniform similarity, the results are obviously the same than the baseline predictor: $p_{1,1}$ = 4 and MAE = 0.73.
+    
     \item [\textbf{P.2}] \textit{Using the the adjusted cosine similarity (Eq.~\ref{eq:similarity}), compute the similarity between user $1$ and user $2$ ($s_{1,2}$), the predicted rating of user 1 for item 1 ($p_{1,1}$ Eq.~\ref{eq:personalized-prediction}) and the prediction accuracy (MAE on \texttt{ml-100k/u2.test}) of the personalized baseline predictor.} 
     
+    In order to compute the Cosine similarity between two users with the function \texttt{simCosine}, we use a Map that associates each user to : (1) the list of the items rated by the user and (2) an other map which associates the items rated by the user to their ratings. We write \texttt{ratingsPreProcessed} to compute the preprocessed ratings.
+    
+    We obtain: $s_{1,2}$ =  0.07, $p_{1,1}$ = 4 and MAE = 0.70. The personalized prediction with cosine similarity is thus more accurate than the four other methods.
+    
         \item [\textbf{P.3}] \textit{Implement the Jaccard Coefficient\footnote{\url{https://en.wikipedia.org/wiki/Jaccard_index}}. Provide the mathematical formulation of your similarity metric in your report. User the jaccard similarity, compute the similarity between user $1$ and user $2$ ($s_{1,2}$), the predicted rating of user 1 for item 1 ($p_{1,1}$ Eq.~\ref{eq:personalized-prediction}) and the prediction accuracy (MAE on \texttt{ml-100k/u2.test}) of the personalized baseline predictor. Is the Jaccard Coefficient better or worst than Adjusted Cosine similarity?}
+        
+        The Jaccard coefficient between users $u$ and $v$ is computed thanks to the formula $$ s_{u,v} = \frac{\mid I(u) \cap I(v)\mid}{\mid I(u) \cup I(v)\mid}$$
+        
+        We obtain: $s_{1,2}$ =  0.03, $p_{1,1}$ = 4 and MAE = 0.72. The Jaccard coefficient is worst than Adjusted Cosine similarity. This is logical: two users may have seen the same movies, but we do not have indication on whether they have rated the movies similarly or not.
+        
+        
 \end{itemize}
 
 \section{Neighbourhood-Based Predictions}
