@@ -102,23 +102,23 @@ package object predictions
     ((u,i) => {
     if (map_u contains u) {r_u = map_u(u)} else mean
     if (map_i_norm contains i) {r_i = map_i_norm(i)}
-    (r_u + r_i * scale(r_u + r_i, r_u)).round})
+    r_u + r_i * scale(r_u + r_i, r_u)})
   }
 
   def predictionUser(ratings : Seq[Rating]) : ((Int,Int) => Double) = {
     val map_u = mapUser(ratings)
     val mean = meanRatings(ratings)
-    ((u,i) => if (map_u contains u) {map_u(u).round} else mean.round)
+    ((u,i) => if (map_u contains u) {map_u(u)} else mean)
   }
 
   def predictionItem(ratings : Seq[Rating]) : ((Int,Int) => Double) = {
     val map_i = mapItem(ratings)
     val mean = meanRatings(ratings)
-    ((u,i) => if (map_i contains i) {map_i(i).round} else mean.round)
+    ((u,i) => if (map_i contains i) {map_i(i)} else mean)
   }
 
   def predictionMean(ratings : Seq[Rating]) : ((Int,Int) => Double) = {
-    val mean = meanRatings(ratings).round
+    val mean = meanRatings(ratings)
     ((u,i) => mean)
   }
 
@@ -188,7 +188,7 @@ package object predictions
     ((u,i) => {
     var r_i = ratingItemSim(u,i,normalized,sim)
     if (map_u contains u) {r_u = map_u(u)} else mean
-    (r_u + r_i * scale(r_u + r_i, r_u)).round
+    r_u + r_i * scale(r_u + r_i, r_u)
     })
   }
 
