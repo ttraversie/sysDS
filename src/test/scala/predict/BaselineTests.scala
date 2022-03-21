@@ -49,7 +49,7 @@ class BaselineTests extends AnyFunSuite with BeforeAndAfterAll {
    test("Compute user 1 average")                           { assert(within(meanRatingUser(1,train2), 3.63302752293578, 0.0001)) }
    test("Compute item 1 average")                           { assert(within(meanRatingItem(1,train2), 3.888268156424581, 0.0001)) }
    test("Compute item 1 average deviation")                 { assert(within(meanNormalizedItem(1,train2),  0.3027072341444875, 0.0001)) }
-   test("Compute baseline prediction for user 1 on item 1") { assert(within(predictionBaseline(train2)(1,1), 4, 0.0001)) }
+   test("Compute baseline prediction for user 1 on item 1") { assert(within(predictionBaseline(train2)(1,1), 4.046819980619529, 0.0001)) }
 
    // Show how to compute the MAE on all four non-personalized methods:
    // 1. There should be four different functions, one for each method, to create a predictor
@@ -57,9 +57,9 @@ class BaselineTests extends AnyFunSuite with BeforeAndAfterAll {
    // 2. There should be a single reusable function to compute the MAE on the test set, given a predictor;
    // 3. There should be invocations of both to show they work on the following datasets.
    test("MAE on all four non-personalized methods on data/ml-100k/u2.base and data/ml-100k/u2.test") {
-     assert(within(mae(predictionMean(train2),test2),  0.89095, 0.0001))
-     assert(within(mae(predictionUser(train2),test2), 0.8078, 0.0001))
-     assert(within(mae(predictionItem(train2),test2), 0.7848, 0.0001))
-     assert(within(mae(predictionBaseline(train2),test2), 0.7258, 0.0001))
+     assert(within(mae(predictionMean(train2),test2),  0.9489109, 0.0001))
+     assert(within(mae(predictionUser(train2),test2), 0.8383401, 0.0001))
+     assert(within(mae(predictionItem(train2),test2),  0.8206951, 0.0001))
+     assert(within(mae(predictionBaseline(train2),test2), 0.7606972, 0.0001))
    }
 }

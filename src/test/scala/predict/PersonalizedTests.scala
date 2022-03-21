@@ -45,37 +45,40 @@ class PersonalizedTests extends AnyFunSuite with BeforeAndAfterAll {
    // decimal after the (floating) point, on data/ml-100k/u2.base (as loaded above).
    test("Test uniform unary similarities") { 
      // Create predictor with uniform similarities
-     
+     val predictorUniform = predictionPersonalized(train2,"Uniform")
+  
      // Compute personalized prediction for user 1 on item 1
-     assert(within(1.0, 0.0, 0.0001))
+     assert(within(predictorUniform(1,1),  4.046819980619529, 0.0001))
 
      // MAE 
-     assert(within(1.0, 0.0, 0.0001))
+     assert(within(mae(predictorUniform,test2), 0.7604467914538644, 0.0001))
    } 
 
    test("Test ajusted cosine similarity") { 
      // Create predictor with adjusted cosine similarities
+     val predictorCosine = predictionPersonalized(train2,"Cosine")
 
      // Similarity between user 1 and user 2
-     assert(within(1.0, 0.0, 0.0001))
+     assert(within(simCosine(1,2,mapUserItems(ratingsPreProcessed(normalizedRatings(mapUser(train2),train2)))), 0.07303711860794568, 0.0001))
 
      // Compute personalized prediction for user 1 on item 1
-     assert(within(1.0, 0.0, 0.0001))
+     assert(within(predictorCosine(1,1), 4.08702725876936, 0.0001))
 
      // MAE 
-     assert(within(1.0, 0.0, 0.0001))
+     assert(within(mae(predictorCosine,test2), 0.7372314455896454, 0.0001))
    }
 
    test("Test jaccard similarity") { 
      // Create predictor with jaccard similarities
+     val predictorJaccard = predictionPersonalized(train2,"Jaccard")
 
      // Similarity between user 1 and user 2
-     assert(within(1.0, 0.0, 0.0001))
+     assert(within(simJaccard(1,2,mapUserItems(ratingsPreProcessed(normalizedRatings(mapUser(train2),train2)))), 0.03088803088803089, 0.0001))
 
      // Compute personalized prediction for user 1 on item 1
-     assert(within(1.0, 0.0, 0.0001))
+     assert(within(predictorJaccard(1,1), 4.094028853907488, 0.0001))
 
      // MAE 
-     assert(within(1.0, 0.0, 0.0001))
+     assert(within(mae(predictorJaccard,test2), 0.7560024362593234, 0.0001))
    }
 }
