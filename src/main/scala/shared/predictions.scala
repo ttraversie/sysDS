@@ -148,7 +148,7 @@ package object predictions
     mapUI
   }
 
-  def simCosine(u : Int, v : Int, mapUI : Map[Int,(Seq[Int],Map[Int,Double])]) : Double = {    
+  def simCosine(u : Int, v : Int, mapUI : Map[Int,(Seq[Int],Map[Int,Double])]) : Double = {  
     if (!(mapUI contains u) || !(mapUI contains v)) 0.0
     var map_u = mapUI(u)
     var map_v = mapUI(v)
@@ -157,7 +157,7 @@ package object predictions
     sim
   }
 
-  def simJaccard(u : Int, v : Int, mapUI : Map[Int,(Seq[Int],Map[Int,Double])]) : Double = {    
+  def simJaccard(u : Int, v : Int, mapUI : Map[Int,(Seq[Int],Map[Int,Double])]) : Double = { 
     if (!(mapUI contains u) || !(mapUI contains v)) 0.0
     var map_u = mapUI(u)
     var map_v = mapUI(v)
@@ -182,11 +182,56 @@ package object predictions
     val mapUI = mapUserItems(preProcessedRatings)
     val sim : ((Int,Int) => Double) = {
             if (similarity == "Uniform") {(u,v) => 1.0}
-            else if (similarity == "Jaccard") {(u,v) => simJaccard(u,v, mapUI)}
-            else {(u,v) => simCosine(u,v, mapUI)}}
+            else if (similarity == "Jaccard") {(u,v) => simJaccard(u,v,mapUI)}
+            else {(u,v) => simCosine(u,v,mapUI)}}
     var r_u : Double = 0.0
     ((u,i) => {
     var r_i = ratingItemSim(u,i,normalized,sim)
+    if (map_u contains u) {r_u = map_u(u)} else mean
+    r_u + r_i * scale(r_u + r_i, r_u)
+    }) 
+  }
+
+// kNN
+
+  def kNNusers(k : Int, normalized : Seq[Rating]) : Map[Int,Map[Int,Double]] = {
+    val preProcessedRatings = ratingsPreProcessed(normalized)
+    val mapUI = mapUserItems(preProcessedRatings)
+    var mapkNN : Seq[(Int,Map[Int,Double])] = Seq()
+    for ((u,valu) <- mapUI) {
+      var simU : Seq[(Int,Double)] = Seq()
+      for ((v,valv) <- mapUI) {
+        if (u != v) {
+          simU = simU :+ (v,simCosine(u,v,mapUI))
+        }
+      }
+      simU = simU.sortBy(x => x._2)(Ordering[Double].reverse).take(k)
+      var mapSimU = simU.toMap
+      mapkNN = mapkNN :+ (u,mapSimU)
+    }
+    mapkNN.toMap
+  }
+
+  def simkNN(u : Int, v : Int, k : Int, normalized : Seq[Rating]) : Double = {
+    val mapkNN = kNNusers(k,normalized)
+    if (mapkNN(u) contains v) mapkNN(u)(v) else 0.0
+  }
+
+  def ratingItemkNN(u : Int, i : Int, normalizedRatings : Seq[Rating], mapkNN : Map[Int,Map[Int,Double]]) : Double = {
+    var rating_i = normalizedRatings.filter(_.item == i).map{case Rating(v,i,r) => if (mapkNN(u) contains v) ((mapkNN(u)(v),r)) else ((0.0,r))}
+    var num = rating_i.filter{case (s,r) => {s != 0}}.map{case (s,r) => s*r}.sum
+    var denom = rating_i.filter{case (s,r) => {s != 0}}.map{case (s,r) => s.abs}.sum
+    if (denom != 0) num/denom else 0.0
+  }
+
+  def predictionKNN(k : Int, ratings : Seq[Rating]) : ((Int,Int) => Double) = {
+    val map_u = mapUser(ratings)
+    val mean = meanRatings(ratings)
+    val normalized = normalizedRatings(map_u,ratings)
+    val mapkNN = kNNusers(k,normalized)
+    var r_u : Double = 0.0
+    ((u,i) => {
+    var r_i = ratingItemkNN(u,i,normalized,mapkNN)
     if (map_u contains u) {r_u = map_u(u)} else mean
     r_u + r_i * scale(r_u + r_i, r_u)
     })

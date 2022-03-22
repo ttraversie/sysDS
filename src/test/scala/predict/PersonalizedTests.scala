@@ -59,7 +59,7 @@ class PersonalizedTests extends AnyFunSuite with BeforeAndAfterAll {
      val predictorCosine = predictionPersonalized(train2,"Cosine")
 
      // Similarity between user 1 and user 2
-     assert(within(simCosine(1,2,mapUserItems(ratingsPreProcessed(normalizedRatings(mapUser(train2),train2)))), 0.07303711860794568, 0.0001))
+     assert(within(simCosine(1,2,mapUserItems(ratingsPreProcessed(normalizedRatings(mapUser(train2),train2))))), 0.07303711860794568, 0.0001))
 
      // Compute personalized prediction for user 1 on item 1
      assert(within(predictorCosine(1,1), 4.08702725876936, 0.0001))
@@ -73,7 +73,7 @@ class PersonalizedTests extends AnyFunSuite with BeforeAndAfterAll {
      val predictorJaccard = predictionPersonalized(train2,"Jaccard")
 
      // Similarity between user 1 and user 2
-     assert(within(simJaccard(1,2,mapUserItems(ratingsPreProcessed(normalizedRatings(mapUser(train2),train2)))), 0.03088803088803089, 0.0001))
+     assert(within(simJaccard(1,2,mapUserItems(ratingsPreProcessed(normalizedRatings(mapUser(train2),train2))))), 0.03088803088803089, 0.0001))
 
      // Compute personalized prediction for user 1 on item 1
      assert(within(predictorJaccard(1,1), 4.094028853907488, 0.0001))
