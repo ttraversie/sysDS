@@ -48,20 +48,24 @@ class RecommenderTests extends AnyFunSuite with BeforeAndAfterAll {
      }).filter(r => r.rating != 0).collect()
 
      // TODO: Create predictor
+     predictor = predictionKNN(300,data ++ personal)
    }
 
    // All the functions definitions for the tests below (and the tests in other suites) 
    // should be in a single library, 'src/main/scala/shared/predictions.scala'.
    //
    test("Prediction for user 1 of item 1") {
-     assert(within(1.0, 0.0, 0.0001))
+     assert(within(predictor(1,1), 4.132180229, 0.0001))
    }
 
    test("Top 3 recommendations for user 944") {
-     val recommendations = List((1,0.0), (2,0.0), (3,0.0))
-     assert(recommendations(0)._1 == 4)
+     val recommendations = recommendation(944,3,data ++ personal,predictor)
+     assert(recommendations(0)._1 == 119)
      assert(within(recommendations(0)._2, 5.0, 0.0001))
-     // Idem recommendation 2 and 3
+     assert(recommendations(1)._1 == 814)
+     assert(within(recommendations(1)._2, 5.0, 0.0001))
+     assert(recommendations(2)._1 == 1189)
+     assert(within(recommendations(2)._2, 5.0, 0.0001))
    }
 
 }

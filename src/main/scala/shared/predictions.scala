@@ -237,4 +237,14 @@ package object predictions
     })
   }
 
+  // Recommendation
+
+  def recommendation(u : Int, n : Int, ratings : Seq[Rating], predictor : (Int,Int) => Double) : Seq[(Int,Double)] = {
+    val items = ratings.filter(_.item != -1).map{case Rating(v,i,r) => i}.distinct
+    val items_u = ratings.filter(_.user == u).map{case Rating(u,i,r) => i}
+    val not_rated = items.diff(items_u)
+    var predictions = not_rated.map{i => (i,predictor(u,i))}
+    (predictions.sortBy(x => x._1)(Ordering[Int])).sortBy(x => x._2)(Ordering[Double].reverse).take(n)
+  }
+
 }

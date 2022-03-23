@@ -49,26 +49,31 @@ class kNNTests extends AnyFunSuite with BeforeAndAfterAll {
    test("kNN predictor with k=10") { 
      // Create predictor on train2
 
+     val predictorkNN = predictionKNN(10,train2)
+
      // Similarity between user 1 and itself
      assert(within(simkNN(1,1,10,normalizedRatings(mapUser(train2),train2)), 0.0, 0.0001))
  
      // Similarity between user 1 and 864
-     assert(within(simkNN(1,864,10,normalizedRatings(mapUser(train2),train2)), 0.0, 0.0001))
+     assert(within(simkNN(1,864,10,normalizedRatings(mapUser(train2),train2)), 0.2423230, 0.0001))
 
      // Similarity between user 1 and 886
      assert(within(simkNN(1,886,10,normalizedRatings(mapUser(train2),train2)), 0.0, 0.0001))
 
      // Prediction user 1 and item 1
-     assert(within(predictionKNN(10,train2)(1,1), 0.0, 0.0001))
+     assert(within(predictorkNN(1,1), 4.319093, 0.0001))
 
      // MAE on test2 
-     assert(within(mae(predictionKNN(10,train2),test2), 0.0, 0.0001))
+     assert(within(mae(predictorkNN,test2), 0.82872779619, 0.0001))
    } 
 
    test("kNN Mae") {
      // Compute MAE for k around the baseline MAE
-     
+     val mae50 = mae(predictionKNN(50,train2),test2)
+     val mae100 = mae(predictionKNN(100,train2),test2)
+     val maeB = mae(predictionBaseline(train2),test2)
      // Ensure the MAEs are indeed lower/higher than baseline
-     assert(1.0 < 0.0)
+     assert(mae100 < maeB)
+     assert(mae50 > maeB)
    }
 }

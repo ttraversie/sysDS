@@ -71,13 +71,13 @@ object Recommender extends App {
           "personal" -> conf.personal()
         ),
         "R.1" -> ujson.Obj(
-          "PredUser1Item1" -> ujson.Num(0.0) // Prediction for user 1 of item 1
+          "PredUser1Item1" -> ujson.Num(predictionKNN(300,data ++ personal)(1,1)) // Prediction for user 1 of item 1
         ),
           // IMPORTANT: To break ties and ensure reproducibility of results,
           // please report the top-3 recommendations that have the smallest
           // movie identifier.
 
-        "R.2" -> List((254, 0.0), (338, 0.0), (615, 0.0)).map(x => ujson.Arr(x._1, movieNames(x._1), x._2))
+        "R.2" -> recommendation(944,3,data ++ personal,predictionKNN(300,data ++ personal)).map(x => ujson.Arr(x._1, movieNames(x._1), x._2))
        )
       val json = write(answers, 4)
 
