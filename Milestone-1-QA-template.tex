@@ -23,7 +23,7 @@
 \textbf{Sciper}: xxx\\
 \textbf{Email:} clement.francis@epfl.ch\\
 \textbf{Name}: Thomas Traversié\\
-\textbf{Sciper}: xxx\\
+\textbf{Sciper}: 350372\\
 \textbf{Email:} thomas.traversie@epfl.ch\\
 }
 
@@ -62,7 +62,7 @@ Implement the previous prediction methods using Scala's standard library, withou
     
     The predicted ating is computed with \texttt{prediction}, applying the given formula and using the functions already defined. If the user has no rating in the training set, the average rating of the user will be 0.0 (due to the definition of \texttt{mean}), thus we return the global average.
     
-    We find : $\bar r_{\bullet,\bullet}$ = 3.53, $\bar r_{1,\bullet}$ = 3.63, $\bar r_{\bullet,1}$ = 3.89, $\bar{\hat r}_{\bullet,1}$ = 0.30 and $p_{1,1}$ = 4.
+    We find : $\bar r_{\bullet,\bullet}$ = 3.5265, $\bar r_{1,\bullet}$ = 3.6330, $\bar r_{\bullet,1}$ = 3.8883, $\bar{\hat r}_{\bullet,1}$ = 0.3027 and $p_{1,1}$ = 4.0468.
     
     
   
@@ -70,7 +70,7 @@ Implement the previous prediction methods using Scala's standard library, withou
     
     We write four functions that take a training set and return a predictor. \texttt{predictionMean}, \texttt{predictionUser}, \texttt{predictionItem} and \texttt{predictionBaseline}. To write efficient functions, we use objects of type Map to store for each user to its average rating, for each item to its average rating and its average deviation. This method avoid the computation of same data multiple times. 
     
-    We write the function \texttt{mae} which compute the MAE for a given predictor and a given testing set. We find the following MAE: 0.89 for $\bar r_{\bullet, \bullet}$, 0.81 for $\bar r_{u,\bullet}$, 0.78 for $\bar r_{\bullet,i}$) and 0.73 for the proposed baseline $p_{u,i}$
+    We write the function \texttt{mae} which compute the MAE for a given predictor and a given testing set. We find the following MAE: 0.9489 for $\bar r_{\bullet, \bullet}$, 0.8383 for $\bar r_{u,\bullet}$, 0.8207 for $\bar r_{\bullet,i}$ and 0.7607 for the proposed baseline $p_{u,i}$
 
   \item [\textbf{B.3}] \textit{Measure the time required for computing the MAE for all ratings in the test set (\texttt{ml-100k/u2.test}) with all four methods by recording the current time before and after (ex: with \texttt{System.nanoTime()} in Scala). The duration is the difference between the two. } 
  
@@ -136,19 +136,19 @@ Implement $p_{u,i}$ using Spark RDDs. Your distributed implementation should giv
 \begin{itemize}
     \item [\textbf{P.1}] \textit{Using uniform similarities of 1 between all users, compute the predicted rating of user 1 for item 1 ($p_{1,1}$) and the prediction accuracy (MAE on \texttt{ml-100k/u2.test}) of the personalized baseline predictor.} 
     
-    To compute a personalized predictor for a specified similarity, we write a unique function \texttt{predictionPersonalized}, the similarity used being notified by an argument. For the predictor with uniform similarity, the results are obviously the same than the baseline predictor: $p_{1,1}$ = 4 and MAE = 0.73.
+    To compute a personalized predictor for a specified similarity, we write a unique function \texttt{predictionPersonalized}, the similarity used being notified by an argument. For the predictor with uniform similarity, the results are obviously the same than the baseline predictor: $p_{1,1}$ = 4.0468 and MAE = 0.7604.
     
     \item [\textbf{P.2}] \textit{Using the the adjusted cosine similarity (Eq.~\ref{eq:similarity}), compute the similarity between user $1$ and user $2$ ($s_{1,2}$), the predicted rating of user 1 for item 1 ($p_{1,1}$ Eq.~\ref{eq:personalized-prediction}) and the prediction accuracy (MAE on \texttt{ml-100k/u2.test}) of the personalized baseline predictor.} 
     
     In order to compute the Cosine similarity between two users with the function \texttt{simCosine}, we use a Map that associates each user to : (1) the list of the items rated by the user and (2) an other map which associates the items rated by the user to their ratings. We write \texttt{ratingsPreProcessed} to compute the preprocessed ratings.
     
-    We obtain: $s_{1,2}$ =  0.07, $p_{1,1}$ = 4 and MAE = 0.70. The personalized prediction with cosine similarity is thus more accurate than the four other methods.
+    We obtain: $s_{1,2}$ = 0.0730, $p_{1,1}$ = 4.0870 and MAE =  0.7372. The personalized prediction with cosine similarity is thus more accurate than the four other methods.
     
         \item [\textbf{P.3}] \textit{Implement the Jaccard Coefficient\footnote{\url{https://en.wikipedia.org/wiki/Jaccard_index}}. Provide the mathematical formulation of your similarity metric in your report. User the jaccard similarity, compute the similarity between user $1$ and user $2$ ($s_{1,2}$), the predicted rating of user 1 for item 1 ($p_{1,1}$ Eq.~\ref{eq:personalized-prediction}) and the prediction accuracy (MAE on \texttt{ml-100k/u2.test}) of the personalized baseline predictor. Is the Jaccard Coefficient better or worst than Adjusted Cosine similarity?}
         
         The Jaccard coefficient between users $u$ and $v$ is computed thanks to the formula $$ s_{u,v} = \frac{\mid I(u) \cap I(v)\mid}{\mid I(u) \cup I(v)\mid}$$
         
-        We obtain: $s_{1,2}$ =  0.03, $p_{1,1}$ = 4 and MAE = 0.72. The Jaccard coefficient is worst than Adjusted Cosine similarity. This is logical: two users may have seen the same movies, but we do not have indication on whether they have rated the movies similarly or not.
+        We obtain: $s_{1,2}$ = 0.0309, $p_{1,1}$ = 4.0940 and MAE = 0.7560. The Jaccard coefficient is worst than Adjusted Cosine similarity. This is logical: two users may have seen the same movies, but we do not have indication on whether they have rated the movies similarly or not.
         
         
 \end{itemize}
@@ -161,10 +161,52 @@ Implement $p_{u,i}$ using Spark RDDs. Your distributed implementation should giv
 
 \begin{itemize}    
         \item [\textbf{N.1}] \textit{Implement the k-NN predictor. Do not include self-similarity in the k-nearest neighbours. Using $k=10$,  \texttt{data/ml-100k/u2.base} for training output the similarities between: (1) user $1$ and itself; (2) user $1$ and user $864$; (3) user $1$ and user $886$. Still using $k=10$, output the prediction for user 1 and item 1 ($p_{1,1}$), and make sure that you obtain an MAE of $0.8287 \pm 0.0001$ on \texttt{data/ml-100k/u2.test}.} 
+        
+        We need to create a new similarity for the k-nearest neighbours predictions, based on the cosine similarity: if $v$ is among the $k$ nearest neighbours of $u$, the the similarity between $u$ and $v$ is their cosine similarity; if not, the similarity is 0. To compute the k-nearest neighbours similarities efficiently, we create a Map that associates a user $u$ to the sequence that contains ($v$, $s_{u,v}$) (with $s_{u,v}$ the adjusted cosine similaity) for the k nearest neighbours $v$ of $u$. This is done by \texttt{kNNusers}. To compute the similarity between $u$ and $v$, we just check whereas $v$ is in the value of the key $u$ in the map, and return the value if it is, 0 otherwise.
+        
+        We write \texttt{ratingItemkNN} to compute the user-specific weighted-sum deviation for an item $i$ and a user $u$ using the new similarity. We are then able to write the function \texttt{predictionKNN}, following the model of the previous predictors.
+        
+        With $k=10$, we find that $s_{1,1}=$ 0 (which is logic because we exclude self-similarity), $s_{1,864}=$ 0.2423, $s_{1,886}=$ 0 and $p_{1,1}$ =  4.3191.
     
     \item [\textbf{N.2}] \textit{Report the MAE on \texttt{data/ml-100k/u2.test} for $k = {10, 30, 50, 100, 200, 300, 400, 800, 942}$. What is the lowest $k$ such that the MAE is lower than for the baseline (non-personalized) method?} 
+    \begin{center}
+    \begin{tabular}{|c|c|}
+  \hline
+  $k$ & $MAE$ \\
+  \hline
+  10 & 0.8287 \\
+  \hline
+  30 & 0.7810 \\
+  \hline
+  50 & 0.7618 \\
+  \hline
+  100 & 0.7467 \\
+  \hline
+  200 & 0.7401 \\
+  \hline
+  300 & 0.7392 \\
+  \hline
+  400 & 0.7391 \\
+  \hline
+  800 & 0.7392 \\
+  \hline
+  943 & 0.7372 \\
+  \hline
+	\end{tabular}
+	\end{center}
+	
+	We observe that the accuracy of the prediction increases with the $k$. The MAE seems to have a logarithmic shape: after $k=$ 50, the improvement of the prediction is smaller.
+	
+	With the baseline (non-personalized) method, we have found a MAE of 0.7607. Thus the lowest $k$ such that the MAE of the k-nearest neighbours is loweer than the MAE of the baseline prediction is $k=$ 100. 
+	
+	The results are coherent: if we take all the neignbours into consideration, the k-nearest neighbours is equivalent to the personalized prediction with cosine similarity.
     
      \item [\textbf{N.3}] \label{q-total-time} \textit{Measure the time required for computing predictions (without using Spark) on \texttt{data/ml-100k/u2.test}. Include the time to train the predictor on \newline \texttt{data/ml-100k/u2.base} including computing the similarities $s_{u,v}$ and using $k=300$. Try reducing the computation time with alternative implementation techniques (making sure you keep obtaining the same results). Mention in your report which alternatives you tried,  which ones were fastest, and by how much. The teams with the correct answer and shortest times on a secret test set will obtain more points on this question.}
+    
+    With the same computer as for the previous measurements, the time of computation is 58 seconds. 
+    
+    We have already  implemented a way to minimize the number of computations (with the map).     
+     
 \end{itemize}
 
 
@@ -175,8 +217,15 @@ Implement $p_{u,i}$ using Spark RDDs. Your distributed implementation should giv
 
 \begin{itemize} 
    \item [\textbf{R.1}] \textit{Train a k-NN predictor with training data from \texttt{data/ml-100k/u.data}, augmented with additional ratings from user "$944$" provided in \texttt{personal.csv}, using adjusted cosine similarity and $k=300$. Report the prediction for user 1 item 1 ($p_{1,1}$)}.
+   
+   We concatenate the two sequences of data (\texttt{data} and \texttt{personnal}) and we train \texttt{predictionKNN} on this concatenation. We find $p_{1,1}$ = 4.1322.
 
   \item [\textbf{R.2}] \textit{Report the top 3 recommendations for user "$944$" using the same k-NN predictor as for \textbf{R.1}.  Include the movie identifier, the movie title, and the prediction score in the output. If additional recommendations have the same predicted value as the top 3 recommendations, prioritize the movies with the smallest identifiers in your top 3 (ex: if the top 8 recommendations all have predicted scores of \texttt{5.0}, choose the top 3 with the smallest ids.) so your results do not depend on the initial permutation of the recommendations.}
+  
+  We create the function recommendation, which takes as arguments a user, an integer $n$, a sequence of Ratings objects and a predictor, and returns the top $n$ movies that the user has not seen, with the predicted rating. The recommendations are sorted by predicted scores, and in case of equality we favour the smallest ids. To implement this, we proceed to two sort: first we sort by id and then by score, thus in case of equality we have the expected result.
+  
+  For the previous predictor and user 944, the top 3 recommendations are: [119, "Maya Lin: A Strong Clear Vision (1994)", 5], [814, "Great Day in Harlem", 5], [1189, "Prefontaine (1997)", 5].
+  
 \end{itemize}
 
 
