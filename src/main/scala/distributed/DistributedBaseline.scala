@@ -67,9 +67,9 @@ object DistributedBaseline extends App {
           "4.Measurements" -> conf.num_measurements()
         ),
         "D.1" -> ujson.Obj(
-          "1.GlobalAvg" -> ujson.Num(0.0), // Datatype of answer: Double
-          "2.User1Avg" -> ujson.Num(0.0),  // Datatype of answer: Double
-          "3.Item1Avg" -> ujson.Num(0.0),   // Datatype of answer: Double
+          "1.GlobalAvg" -> ujson.Num(meanRatingsRDD(train)), // Datatype of answer: Double
+          "2.User1Avg" -> ujson.Num(meanRatingUserRDD(1,train)),  // Datatype of answer: Double
+          "3.Item1Avg" -> ujson.Num(meanRatingItemRDD(1,train)),   // Datatype of answer: Double
           "4.Item1AvgDev" -> ujson.Num(0.0), // Datatype of answer: Double,
           "5.PredUser1Item1" -> ujson.Num(0.0), // Datatype of answer: Double
           "6.Mae" -> ujson.Num(0.0) // Datatype of answer: Double

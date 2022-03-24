@@ -44,6 +44,8 @@ package object predictions
                 case None => Rating(-1, -1, -1)})
   }
 
+  // Baseline part
+
   def meanRatingUser(user : Int, ratings : Seq[Rating]) : Double = {
     mean(ratings.filter(_.user == user).map{case Rating(u,i,r) => r})
   }
@@ -119,7 +121,24 @@ package object predictions
     mean(test.filter(_.rating != -1).map{case Rating(u,i,r) => (predictor(u,i) - r).abs})
   }
 
-  // Personnalized ratings
+  // Spark part
+
+  def meanRDD(s : org.apache.spark.rdd.RDD[Double]): Double =  s.mean() //if (s.count() > 0) s.reduce(_+_) / s.count() else 0.0
+
+  def meanRatingsRDD(rdd: org.apache.spark.rdd.RDD[Rating]): Double = { 
+    meanRDD(rdd.filter(_.rating != -1).map{case Rating(u,i,r) => r})
+  }
+
+  def meanRatingUserRDD(user : Int, ratings : org.apache.spark.rdd.RDD[Rating]) : Double = {
+    meanRDD(ratings.filter(_.user == user).map{case Rating(u,i,r) => r})
+  }
+
+  def meanRatingItemRDD(item : Int, ratings : org.apache.spark.rdd.RDD[Rating]) : Double = {
+    meanRDD(ratings.filter(_.item == item).map{case Rating(u,i,r) => r})
+  }
+
+
+  // Personnalized predictions part
 
   def normalizedRatings(map_u : Map[Int,Double], ratings : Seq[Rating]) : Seq[Rating] = {
     ratings.filter(_.user != -1).map{case Rating(u,i,r) => Rating(u,i,(r - map_u(u))/scale(r, map_u(u)))}
@@ -185,7 +204,7 @@ package object predictions
     }) 
   }
 
-// kNN
+// Neighbourhood-based predictions part
 
   def kNNusers(k : Int, normalized : Seq[Rating]) : Map[Int,Map[Int,Double]] = {
     val preProcessedRatings = ratingsPreProcessed(normalized)
@@ -230,7 +249,7 @@ package object predictions
     })
   }
 
-  // Recommendation
+  // Recommendation part
 
   def recommendation(u : Int, n : Int, ratings : Seq[Rating], predictor : (Int,Int) => Double) : Seq[(Int,Double)] = {
     val items = ratings.filter(_.item != -1).map{case Rating(v,i,r) => i}.distinct
