@@ -48,7 +48,7 @@ class BaselineTests extends AnyFunSuite with BeforeAndAfterAll {
    test("Compute global average")                           { assert(within(meanRatings(train2), 3.5264625, 0.0001)) }
    test("Compute user 1 average")                           { assert(within(meanRatingUser(1,train2), 3.63302752293578, 0.0001)) }
    test("Compute item 1 average")                           { assert(within(meanRatingItem(1,train2), 3.888268156424581, 0.0001)) }
-   test("Compute item 1 average deviation")                 { assert(within(meanNormalizedItem(1,train2),  0.3027072341444875, 0.0001)) }
+   test("Compute item 1 average deviation")                 { assert(within(meanNormalizedItem(1,train2,mapUser(train2)),  0.3027072341444875, 0.0001)) }
    test("Compute baseline prediction for user 1 on item 1") { assert(within(predictionBaseline(train2)(1,1), 4.046819980619529, 0.0001)) }
 
    // Show how to compute the MAE on all four non-personalized methods:

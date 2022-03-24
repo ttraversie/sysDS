@@ -90,7 +90,7 @@ object Baseline extends App {
           "1.GlobalAvg" -> ujson.Num(meanRatings(train)), // Datatype of answer: Double
           "2.User1Avg" -> ujson.Num(meanRatingUser(1,train)),  // Datatype of answer: Double
           "3.Item1Avg" -> ujson.Num(meanRatingItem(1,train)),   // Datatype of answer: Double
-          "4.Item1AvgDev" -> ujson.Num(meanNormalizedItem(1,train)), // Datatype of answer: Double
+          "4.Item1AvgDev" -> ujson.Num(meanNormalizedItem(1,train,mapUser(train))), // Datatype of answer: Double
           "5.PredUser1Item1" -> ujson.Num(predictorB(1,1)) // Datatype of answer: Double
         ),
         "B.2" -> ujson.Obj(
