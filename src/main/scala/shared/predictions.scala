@@ -123,7 +123,7 @@ package object predictions
 
   // Spark part
 
-  def meanRDD(s : org.apache.spark.rdd.RDD[Double]): Double =  s.mean() //if (s.count() > 0) s.reduce(_+_) / s.count() else 0.0
+  def meanRDD(s : org.apache.spark.rdd.RDD[Double]): Double =  if (s.count() > 0) s.reduce(_+_) / s.count().toDouble else 0.0
 
   def meanRatingsRDD(rdd: org.apache.spark.rdd.RDD[Rating]): Double = { 
     meanRDD(rdd.filter(_.rating != -1).map{case Rating(u,i,r) => r})
@@ -136,6 +136,23 @@ package object predictions
   def meanRatingItemRDD(item : Int, ratings : org.apache.spark.rdd.RDD[Rating]) : Double = {
     meanRDD(ratings.filter(_.item == item).map{case Rating(u,i,r) => r})
   }
+
+  def mapUserRDD(ratings : org.apache.spark.rdd.RDD[Rating]) : org.apache.spark.rdd.RDD[(Int,Double)] = {
+    val users = ratings.filter(_.user != -1).map{case Rating(u,i,r) => (u,r)}.groupBy(x => x._1)
+    val map_u = users mapValues (x => mean(x.toSeq.map{case (u,l) => l}))
+    map_u
+  }
+
+  /*
+
+  def normalizeRDD(r_u_i : Double, user : Int, item : Int, map_u : org.apache.spark.rdd.RDD[(Int,Double)]) : Double = {
+    val r_u = map_u.lookup(user)(0)
+    (r_u_i - r_u)/scale(r_u_i, r_u)
+  }
+
+  def meanNormalizedItemRDD(item : Int, ratings : org.apache.spark.rdd.RDD[Rating], map_u : org.apache.spark.rdd.RDD[(Int,Double)]) : Double = {
+    meanRDD(ratings.filter(_.item == item).map{case Rating(u,i,r) => normalizeRDD(r, u, item, map_u)})
+  }*/
 
 
   // Personnalized predictions part

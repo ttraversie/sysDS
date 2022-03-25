@@ -42,9 +42,9 @@ class DistributedBaselineTests extends AnyFunSuite with BeforeAndAfterAll {
    // src/main/scala/predict/Baseline.scala.
    // Add assertions with the answer you expect from your code, up to the 4th
    // decimal after the (floating) point, on data/ml-100k/u2.base (as loaded above).
-   test("Compute global average")                           { assert(within(1.0, 0.0, 0.0001)) }
-   test("Compute user 1 average")                           { assert(within(1.0, 0.0, 0.0001)) }
-   test("Compute item 1 average")                           { assert(within(1.0, 0.0, 0.0001)) }
+   test("Compute global average")                           { assert(within(meanRatingsRDD(train2), 3.5264625, 0.0001)) }
+   test("Compute user 1 average")                           { assert(within(meanRatingUserRDD(1,train2), 3.63302752293578, 0.0001)) }
+   test("Compute item 1 average")                           { assert(within(meanRatingItemRDD(1,train2), 3.888268156424581, 0.0001)) }
    test("Compute item 1 average deviation")                 { assert(within(1.0, 0.0, 0.0001)) }
    test("Compute baseline prediction for user 1 on item 1") { assert(within(1.0, 0.0, 0.0001)) }
 
