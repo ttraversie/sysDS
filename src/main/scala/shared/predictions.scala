@@ -44,67 +44,79 @@ package object predictions
                 case None => Rating(-1, -1, -1)})
   }
 
-  // Baseline part
+  // Part 3: Baseline: Prediction based on Global Average Deviation
 
+  // Compute the global average rating
+  def meanRatings(ratings : Seq[Rating]) : Double = {
+    mean(ratings.filter(_.rating != -1).map{case Rating(u,i,r) => r}) 
+  }
+
+  // Compute the average rating done by given user
   def meanRatingUser(user : Int, ratings : Seq[Rating]) : Double = {
     mean(ratings.filter(_.user == user).map{case Rating(u,i,r) => r})
   }
 
+  // Compute the average rating for a given item
   def meanRatingItem(item : Int, ratings : Seq[Rating]) : Double = {
     mean(ratings.filter(_.item == item).map{case Rating(u,i,r) => r})
-  }
-
-  def meanRatings(ratings : Seq[Rating]) : Double = {
-    mean(ratings.filter(_.rating != -1).map{case Rating(u,i,r) => r}) 
   }
 
   def scale(x : Double, y : Double) : Double = 
     if (x > y) 5-y else if (x < y) y-1 else 1
 
+  // Create a Map: key = user, value = average of the ratings done by the user
   def mapUser(ratings : Seq[Rating]) : Map[Int,Double] = {
     val users = ratings.filter(_.user != -1).map{case Rating(u,i,r) => (u,r)}.groupBy(x => x._1)
     val map_u = users mapValues (x => mean(x.map{case (u,l) => l}))
     map_u
   }
 
-  def normalize(r_u_i : Double, user : Int, item : Int, map_u : Map[Int,Double]) : Double = {
+  // Compute the normalized deviation
+  def normalize(r_u_i : Double, user : Int, map_u : Map[Int,Double]) : Double = {
     val r_u = map_u(user)
     (r_u_i - r_u)/scale(r_u_i, r_u)
   }
 
+  // Compute the global average deviation for an item
   def meanNormalizedItem(item : Int, ratings : Seq[Rating], map_u : Map[Int,Double]) : Double = {
-    mean(ratings.filter(_.item == item).map{case Rating(u,i,r) => normalize(r, u, item, map_u)})
+    mean(ratings.filter(_.item == item).map{case Rating(u,i,r) => normalize(r, u, map_u)})
   }
 
+  // Create a Map: key = item, value = average of the ratings for the item
   def mapItem(ratings : Seq[Rating]) : Map[Int,Double] = {
     val items = ratings.filter(_.item != -1).map{case Rating(u,i,r) => i}.distinct
     val map_i = (items.map{i => (i,meanRatingItem(i, ratings))}).toMap
     map_i
   }
 
+  // Create a Map: key = item, value = global average deviation for the item
   def mapItemNormalized(ratings : Seq[Rating], map_u : Map[Int,Double]) : Map[Int,Double] = {
     val items = ratings.filter(_.item != -1).map{case Rating(u,i,r) => i}.distinct
     val map_i = (items.map{i => (i,meanNormalizedItem(i, ratings, map_u))}).toMap
     map_i
   }
 
-  def predictionUser(ratings : Seq[Rating]) : ((Int,Int) => Double) = {
-    val map_u = mapUser(ratings)
+  // Create the global average rating predictor
+  def predictionMean(ratings : Seq[Rating]) : ((Int,Int) => Double) = {
     val mean = meanRatings(ratings)
-    ((u,i) => if (map_u contains u) {map_u(u)} else mean)
+    ((u,i) => mean)
   }
 
+  // Create a predictor which returns the average rating of the item
   def predictionItem(ratings : Seq[Rating]) : ((Int,Int) => Double) = {
     val map_i = mapItem(ratings)
     val mean = meanRatings(ratings)
     ((u,i) => if (map_i contains i) {map_i(i)} else mean)
   }
 
-  def predictionMean(ratings : Seq[Rating]) : ((Int,Int) => Double) = {
+  // Create a predictor which returns the average rating of the user
+  def predictionUser(ratings : Seq[Rating]) : ((Int,Int) => Double) = {
+    val map_u = mapUser(ratings)
     val mean = meanRatings(ratings)
-    ((u,i) => mean)
-  }
+    ((u,i) => if (map_u contains u) {map_u(u)} else mean)
+  } 
 
+  // Create the Baseline predictor
   def predictionBaseline(ratings : Seq[Rating]) : ((Int,Int) => Double) = {
     val map_u = mapUser(ratings)
     val map_i_norm = mapItemNormalized(ratings,map_u)
@@ -117,11 +129,12 @@ package object predictions
     r_u + r_i * scale(r_u + r_i, r_u)})
   }
 
+  // Compute the MAE for a given predictor
   def mae(predictor : (Int,Int) => Double, test : Seq[Rating]) : Double = {
     mean(test.filter(_.rating != -1).map{case Rating(u,i,r) => (predictor(u,i) - r).abs})
   }
 
-  // Spark part
+  // Part 4: Spark Distribution Overhead
 
   def meanRDD(s : org.apache.spark.rdd.RDD[Double]): Double =  if (s.count() > 0) s.reduce(_+_) / s.count().toDouble else 0.0
 
@@ -143,20 +156,10 @@ package object predictions
     map_u
   }
 
-  /*
 
-  def normalizeRDD(r_u_i : Double, user : Int, item : Int, map_u : org.apache.spark.rdd.RDD[(Int,Double)]) : Double = {
-    val r_u = map_u.lookup(user)(0)
-    (r_u_i - r_u)/scale(r_u_i, r_u)
-  }
+  // Part 5: Personnalized predictions
 
-  def meanNormalizedItemRDD(item : Int, ratings : org.apache.spark.rdd.RDD[Rating], map_u : org.apache.spark.rdd.RDD[(Int,Double)]) : Double = {
-    meanRDD(ratings.filter(_.item == item).map{case Rating(u,i,r) => normalizeRDD(r, u, item, map_u)})
-  }*/
-
-
-  // Personnalized predictions part
-
+  // Normalize the ratings
   def normalizedRatings(map_u : Map[Int,Double], ratings : Seq[Rating]) : Seq[Rating] = {
     ratings.filter(_.user != -1).map{case Rating(u,i,r) => Rating(u,i,(r - map_u(u))/scale(r, map_u(u)))}
   } // map_u the map obtained by mapUser
@@ -165,11 +168,15 @@ package object predictions
     scala.math.sqrt(s.map(x => x*x).sum)
   }
 
+  // Preprocess the ratings
   def ratingsPreProcessed(normalizedRatings : Seq[Rating]) : Seq[Rating] = {
     val users = normalizedRatings.filter(_.user != -1).map{case Rating(u,i,r) => u}.distinct
     val map_uNorm = (users.map{u => (u,norm2(normalizedRatings.filter(_.user == u).map{case Rating(u,i,r) => r}))}).toMap
     normalizedRatings.filter(_.user != -1).map{case Rating(u,i,r) => Rating(u,i,r/map_uNorm(u))}
   }
+
+  // Create a Map: key = user, 
+  //               value = Map: key = item, value = prepreocessed rating of the item by the user
 
   def mapUserItems(preProcessedRatings : Seq[Rating]) : Map[Int,(Seq[Int],Map[Int,Double])] = {
     val users = preProcessedRatings.map{case Rating(u,i,r) => u}.distinct
@@ -177,6 +184,7 @@ package object predictions
     mapUI
   }
 
+  // Compute the Adjusted Cosine similarity between two users
   def simCosine(u : Int, v : Int, mapUI : Map[Int,(Seq[Int],Map[Int,Double])]) : Double = {  
     if (!(mapUI contains u) || !(mapUI contains v)) 0.0
     var map_u = mapUI(u)
@@ -186,6 +194,7 @@ package object predictions
     sim
   }
 
+  // Compute the Jaccard similarity between two users
   def simJaccard(u : Int, v : Int, mapUI : Map[Int,(Seq[Int],Map[Int,Double])]) : Double = { 
     if (!(mapUI contains u) || !(mapUI contains v)) 0.0
     var map_u = mapUI(u)
@@ -196,6 +205,7 @@ package object predictions
     sim
   }
 
+  // Compute the user-specific weighted-sum deviation for an item and a user
   def ratingItemSim(u : Int, i : Int, normalizedRatings : Seq[Rating], sim : (Int,Int) => Double) : Double = {
     var rating_i = normalizedRatings.filter(_.item == i).map{case Rating(v,i,r) => (sim(u,v),r)}
     var num = rating_i.map{case (s,r) => s*r}.sum
@@ -203,6 +213,7 @@ package object predictions
     if (denom != 0) num/denom else 0.0
   }
 
+  // Create the Personalized predictor
   def predictionPersonalized(ratings : Seq[Rating], similarity : String) : ((Int,Int) => Double) = {
     val map_u = mapUser(ratings)
     val normalized = normalizedRatings(map_u,ratings)
@@ -221,8 +232,10 @@ package object predictions
     }) 
   }
 
-// Neighbourhood-based predictions part
+// Part 6: Neighbourhood-Based Predictions
 
+  // Create a Map: key = user, 
+  //               value = Map: key = a kNN of the user, value: their Consine similarity
   def kNNusers(k : Int, normalized : Seq[Rating]) : Map[Int,Map[Int,Double]] = {
     val preProcessedRatings = ratingsPreProcessed(normalized)
     val mapUI = mapUserItems(preProcessedRatings)
@@ -241,11 +254,13 @@ package object predictions
     mapkNN.toMap
   }
 
+  // Compute the kNN similarity between two users
   def simkNN(u : Int, v : Int, k : Int, normalized : Seq[Rating]) : Double = {
     val mapkNN = kNNusers(k,normalized)
     if (mapkNN(u) contains v) mapkNN(u)(v) else 0.0
   }
 
+  // Compute the user-specific weighted-sum deviation for an item and a user for the kNN similarity
   def ratingItemkNN(u : Int, i : Int, normalizedRatings : Seq[Rating], mapkNN : Map[Int,Map[Int,Double]]) : Double = {
     var rating_i = normalizedRatings.filter(_.item == i).map{case Rating(v,i,r) => if (mapkNN(u) contains v) ((mapkNN(u)(v),r)) else ((0.0,r))}
     var num = rating_i.filter{case (s,r) => {s != 0}}.map{case (s,r) => s*r}.sum
@@ -253,6 +268,7 @@ package object predictions
     if (denom != 0) num/denom else 0.0
   }
 
+  // Create the kNN predictor
   def predictionKNN(k : Int, ratings : Seq[Rating]) : ((Int,Int) => Double) = {
     val map_u = mapUser(ratings)
     val mean = meanRatings(ratings)
@@ -266,8 +282,9 @@ package object predictions
     })
   }
 
-  // Recommendation part
+  // Part 7: Recommendation
 
+  // Recommend the top n items and the predicted score with respect to a given predictor
   def recommendation(u : Int, n : Int, ratings : Seq[Rating], predictor : (Int,Int) => Double) : Seq[(Int,Double)] = {
     val items = ratings.filter(_.item != -1).map{case Rating(v,i,r) => i}.distinct
     val items_u = ratings.filter(_.user == u).map{case Rating(u,i,r) => i}
